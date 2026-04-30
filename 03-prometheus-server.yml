@@ -111,6 +111,7 @@ metadata:
   namespace: monitoring
   annotations:
     kubernetes.io/ingress.class: "layer2-eip"
+    lb.kubesphere.io/v1alpha1: openelb
 spec:
   selector:
     app: prometheus
