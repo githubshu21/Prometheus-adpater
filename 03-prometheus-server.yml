@@ -175,7 +175,8 @@ data:
       kubernetes_sd_configs:      #调用kubernetes的API Server
       - role: pod                 #调用集群pod列表的状态信息
       relabel_configs:            #定义过滤器和信息提取器
-      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]     #定义白名单过过滤规则，Prometheus会检查pod是否携带prometheus.io/scrape的Annotation，__meta_kubernetes_pod_annotation_为固定格式
+        #定义白名单过过滤规则，Prometheus会检查pod是否携带prometheus.io/scrape的Annotation（如何需要监控的资源都需要携带对应的Annotation配置否则将无法监控），__meta_kubernetes_pod_annotation_为固定格式
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape] 
         action: keep              #匹配后的动作，keep表示匹配成功则保留中国目标，匹配失败直接丢弃这个目标，不再抓取，类似白名单机制；drop与keep相反，匹配成功则丢去，黑名单机制
         regex: true               #定义正则表达式，用于和提取到的值进行对比，这里的true表示提取的值必须为true
       - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
