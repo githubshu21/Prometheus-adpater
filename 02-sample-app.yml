@@ -13,9 +13,9 @@ spec:
       labels:
         app: sample-app
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8080"
-        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "true"        #定义允许Prometheus抓取不指标
+        prometheus.io/port: "8080"          #抓取的端口
+        prometheus.io/path: "/metrics"      #抓取的路径
     spec:
       containers:
       - name: sample-app
