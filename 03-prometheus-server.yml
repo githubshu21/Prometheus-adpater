@@ -48,14 +48,14 @@ metadata:
 data:
   prometheus.yml: |
     global:
-      scrape_interval: 15s            
-      evaluation_interval: 15s
-    scrape_configs:
+      scrape_interval: 15s           #刮擦间隔时间 
+      evaluation_interval: 15s       #评估间隔时间
+    scrape_configs:                  #定义多任务抓取
     - job_name: 'prometheus'
       static_configs:
       - targets: ['localhost:9090']
-    - job_name: 'kubernetes-apiservers'
-      kubernetes_sd_configs:
+    - job_name: 'kubernetes-apiservers'    #定义服务名称
+      kubernetes_sd_configs:               #定义k8s的服务器发现
       - role: endpoints
       scheme: https
       tls_config:
@@ -131,7 +131,7 @@ data:
       metrics_path: /probe
       params:
         module: [http_2xx]
-      relabel_configs:
+      relabel_configs:            
       - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
         action: keep
         regex: true
@@ -171,22 +171,23 @@ data:
         target_label: namespace
       - source_labels: [__meta_kubernetes_ingress_name]
         target_label: ingress
-    - job_name: 'kubernetes-pods'
-      kubernetes_sd_configs:
-      - role: pod
-      relabel_configs:
-      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-        action: keep
-        regex: true
+    - job_name: 'kubernetes-pods' #定义抓取任务名称
+      kubernetes_sd_configs:      #调用kubernetes的API Server
+      - role: pod                 #调用集群pod列表的状态信息
+      relabel_configs:            #定义过滤器和信息提取器
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]     #定义白名单过过滤规则，Prometheus会检查pod是否携带prometheus.io/scrape的Annotation，__meta_kubernetes_pod_annotation_为固定格式
+        action: keep              #匹配后的动作，keep表示匹配成功则保留中国目标，匹配失败直接丢弃这个目标，不再抓取，类似白名单机制；drop与keep相反，匹配成功则丢去，黑名单机制
+        regex: true               #定义正则表达式，用于和提取到的值进行对比，这里的true表示提取的值必须为true
       - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-        action: replace
+        action: replace                  #替换，匹配成功则将值提出出来，写入一个新的标签target_label中
         target_label: __metrics_path__
         regex: (.+)
-      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-        action: replace
+        #当匹配了多个source_labels时，Prometheus在处理前默认使用";"进行拼接一个完整的长字符串__address__ kubernetes分配给pod的默认地址，可能携带端口(10.0.0.1:80)，"..._port"在Pod上大的注解值(比如9090)，拼接后就是10.0.0.1:80;9090
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]        
+        action: replace             #将匹配的值重新写入到target_label中定义的标签中
         target_label: __address__
         regex: ([^:]+)(?::\d+)?;(\d+)
-        replacement: $1:$2
+        replacement: $1:$2        #表示重新组装，将regex中匹配后提取的值重新拼接为$1:$2，即10.0.0.1:9090
       - action: labelmap
         regex: __meta_kubernetes_pod_label_(.+)
       - source_labels: [__meta_kubernetes_namespace]
