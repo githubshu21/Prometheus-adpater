@@ -2,6 +2,7 @@ root@master01:~/kube-prometheus# kubectl get hpa -n monitoring
 NAME             REFERENCE               TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
 sample-app-hpa   Deployment/sample-app   0/5       2         10        2          19m
 
+#查看pod的访问指标数
 root@master01:~/kube-prometheus# kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/monitoring/pods/*/http_requests_per_second" | jq .
 
 #编写while循环访问对于的网站，实时查看pod变化
